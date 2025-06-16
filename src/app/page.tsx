@@ -808,13 +808,17 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
     setSubmitStatus('idle');
 
     try {
-      // Using Vercel API Route (easier setup)
+      // Switch back to Vercel API route once path is fixed
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(contactForm)
+        body: JSON.stringify({
+          name: contactForm.name,
+          email: contactForm.email,
+          message: contactForm.message
+        })
       });
 
       const result = await response.json();
@@ -881,9 +885,9 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
               </div>
 
               <div className="mt-8 p-4 bg-green-600/20 rounded-lg border border-green-400/30">
-                <h4 className="font-semibold text-green-300 mb-2">🚀 Powered by Supabase + Resend</h4>
+                <h4 className="font-semibold text-green-300 mb-2">🚀 Powered by Vercel + Resend</h4>
                 <ul className="text-xs text-gray-300 space-y-1">
-                  <li>• Serverless edge functions</li>
+                  <li>• Serverless API routes</li>
                   <li>• Professional email delivery</li>
                   <li>• Secure & scalable infrastructure</li>
                   <li>• Real-time form processing</li>
