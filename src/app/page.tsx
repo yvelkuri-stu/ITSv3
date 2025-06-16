@@ -793,6 +793,7 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const handleContactFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -804,16 +805,33 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
     }
 
     setIsSubmitting(true);
+    setSubmitStatus('idle');
 
     try {
-      // Simulate form submission - replace with actual integration
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      alert(`Thank you ${contactForm.name}! Your message has been sent successfully. We'll get back to you at ${contactForm.email} soon.`);
+      // Using Vercel API Route (easier setup)
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contactForm)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to send message');
+      }
+
+      setSubmitStatus('success');
       setContactForm({ name: '', email: '', message: '' });
       
+      alert(`Thank you ${contactForm.name}! Your message has been sent successfully. We'll get back to you at ${contactForm.email} soon.`);
+      
     } catch (error) {
-      alert('Sorry, there was an error sending your message. Please try again or contact us directly.');
+      console.error('Contact form error:', error);
+      setSubmitStatus('error');
+      alert('Sorry, there was an error sending your message. Please try again or contact us directly at hello@idealtechnosoft.com');
     } finally {
       setIsSubmitting(false);
     }
@@ -862,13 +880,13 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
                 </div>
               </div>
 
-              <div className="mt-8 p-4 bg-indigo-600/20 rounded-lg border border-indigo-400/30">
-                <h4 className="font-semibold text-indigo-300 mb-2">Form Integration Options:</h4>
+              <div className="mt-8 p-4 bg-green-600/20 rounded-lg border border-green-400/30">
+                <h4 className="font-semibold text-green-300 mb-2">🚀 Powered by Supabase + Resend</h4>
                 <ul className="text-xs text-gray-300 space-y-1">
-                  <li>• EmailJS for client-side email delivery</li>
-                  <li>• Formspree for form backend service</li>
-                  <li>• Netlify Forms for JAMstack sites</li>
-                  <li>• Custom API integration</li>
+                  <li>• Serverless edge functions</li>
+                  <li>• Professional email delivery</li>
+                  <li>• Secure & scalable infrastructure</li>
+                  <li>• Real-time form processing</li>
                 </ul>
               </div>
             </div>
@@ -886,6 +904,7 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
                     className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:border-purple-400 focus:outline-none text-white placeholder-gray-400 text-sm sm:text-base transition-colors duration-300"
                     onChange={(e) => setContactForm(prev => ({ ...prev, name: e.target.value }))}
                     disabled={isSubmitting}
+                    required
                   />
                 </div>
                 <div>
@@ -897,6 +916,7 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
                     className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:border-purple-400 focus:outline-none text-white placeholder-gray-400 text-sm sm:text-base transition-colors duration-300"
                     onChange={(e) => setContactForm(prev => ({ ...prev, email: e.target.value }))}
                     disabled={isSubmitting}
+                    required
                   />
                 </div>
               </div>
@@ -909,8 +929,22 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
                   className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:border-purple-400 focus:outline-none text-white placeholder-gray-400 resize-none text-sm sm:text-base transition-colors duration-300"
                   onChange={(e) => setContactForm(prev => ({ ...prev, message: e.target.value }))}
                   disabled={isSubmitting}
+                  required
                 />
               </div>
+              
+              {submitStatus === 'success' && (
+                <div className="p-4 bg-green-600/20 border border-green-400/30 rounded-lg">
+                  <p className="text-green-300 text-sm">✅ Message sent successfully! We'll get back to you soon.</p>
+                </div>
+              )}
+              
+              {submitStatus === 'error' && (
+                <div className="p-4 bg-red-600/20 border border-red-400/30 rounded-lg">
+                  <p className="text-red-300 text-sm">❌ Failed to send message. Please try again or email us directly.</p>
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -928,7 +962,7 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
                     </>
                   ) : (
                     <>
-                      ➤ Send Message
+                      🚀 Send Message
                     </>
                   )}
                 </span>
