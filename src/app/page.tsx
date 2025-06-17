@@ -536,10 +536,10 @@ const TeamSection = () => {
     },
     {
       name: "Vamsi Priya",
-      role: "Robotics Lead",
+      role: "Co-Founder & CTO",
       specialty: "Robotics & International Technology Solutions",
-      avatar: "👩‍",
-      experience: "8+ years",
+      avatar: "👩‍💻",
+      experience: "15+ years",
       bio: "Robotics expert with extensive experience delivering cutting-edge automation solutions for Japanese enterprise clients.",
       education: "Bachelors in Computer Science, Specialized in Robotics Engineering",
       previousProjects: [
@@ -557,7 +557,30 @@ const TeamSection = () => {
       ],
       specialties: "Robotics automation, international project delivery, Japanese market expertise, and AI-powered manufacturing solutions."
     },
-        {
+    {
+      name: "Raj Kumar",
+      role: "Lead Developer",
+      specialty: "Full-Stack Development",
+      avatar: "👨‍💻",
+      experience: "8+ years",
+      bio: "Full-stack architect who has built scalable systems serving millions of users worldwide.",
+      education: "MS Software Engineering, BS Computer Science",
+      previousProjects: [
+        "Built scalable e-commerce platform (10M+ users)",
+        "Developed real-time trading systems",
+        "Created award-winning mobile apps",
+        "Led microservices architecture implementations"
+      ],
+      skills: ["React/Next.js", "Node.js", "Python", "Cloud Architecture", "Microservices", "DevOps"],
+      achievements: [
+        "GitHub top contributor",
+        "Built systems handling 1B+ requests/day",
+        "Open source maintainer",
+        "Technical architecture expert"
+      ],
+      specialties: "Scalable web applications, cloud architecture, and high-performance systems."
+    },
+    {
       name: "Anita Singh",
       role: "Design Director",
       specialty: "UI/UX Design",
@@ -876,18 +899,7 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
     setSubmitStatus('idle');
 
     try {
-      // Simulate API call
-      console.log('Submitting form data:', {
-        name: contactForm.name.trim(),
-        email: contactForm.email.trim(),
-        message: contactForm.message.trim(),
-        company: contactForm.company.trim() || undefined,
-        projectType: contactForm.projectType || undefined,
-        timestamp: new Date().toISOString(),
-        source: 'website-contact-form'
-      });
-
-      // NOTE: Replace this with your actual API endpoint
+      // NOTE: This now points to your API route
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
@@ -1157,21 +1169,27 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
                     disabled={isSubmitting}
                     required
                   />
-                  <select
-                    name="projectType"
-                    value={contactForm.projectType}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-purple-400 focus:outline-none text-white transition-all duration-300"
-                    onChange={(e) => setContactForm(prev => ({ ...prev, projectType: e.target.value }))}
-                    disabled={isSubmitting}
-                  >
-                    <option value="">Select Project Type</option>
-                    <option value="web-development">Web Development</option>
-                    <option value="mobile-app">Mobile App</option>
-                    <option value="ai-ml">AI/ML Solution</option>
-                    <option value="ui-ux">UI/UX Design</option>
-                    <option value="consulting">Consulting</option>
-                    <option value="other">Other</option>
-                  </select>
+                  {/* STYLING FIX: Select box now has a custom arrow and consistent theme */}
+                  <div className="relative">
+                     <select
+                      name="projectType"
+                      value={contactForm.projectType}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-purple-400 focus:outline-none text-white transition-all duration-300 appearance-none"
+                      onChange={(e) => setContactForm(prev => ({ ...prev, projectType: e.target.value }))}
+                      disabled={isSubmitting}
+                    >
+                      <option value="" className="bg-slate-800">Select Project Type</option>
+                      <option value="web-development" className="bg-slate-800">Web Development</option>
+                      <option value="mobile-app" className="bg-slate-800">Mobile App</option>
+                      <option value="ai-ml" className="bg-slate-800">AI/ML Solution</option>
+                      <option value="ui-ux" className="bg-slate-800">UI/UX Design</option>
+                      <option value="consulting" className="bg-slate-800">Consulting</option>
+                      <option value="other" className="bg-slate-800">Other</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </div>
+                  </div>
                 </div>
 
                 <div>
