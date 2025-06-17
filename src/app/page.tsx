@@ -75,7 +75,7 @@ const Navigation = ({ userInteractions, onInteraction }: { userInteractions: num
     onInteraction();
     const element = document.getElementById(targetId);
     if (element) {
-      element.scrollIntoView({ 
+      element.scrollIntoView({
         behavior: 'smooth',
         block: 'start'
       });
@@ -139,26 +139,26 @@ const HeroSection = ({ userInteractions, onInteraction }: { userInteractions: nu
   const LiveTime = React.memo(() => {
     const [time, setTime] = useState<Date | null>(null);
     const [mounted, setMounted] = useState(false);
-    
+
     useEffect(() => {
       setMounted(true);
       setTime(new Date());
       const timer = setInterval(() => setTime(new Date()), 1000);
       return () => clearInterval(timer);
     }, []);
-    
+
     if (!mounted || !time) {
       return <>--:--:--</>;
     }
-    
+
     return <>{time.toLocaleTimeString()}</>;
   });
 
-  const InteractiveButton = ({ 
-    children, 
-    variant = "primary", 
-    onClick, 
-    className = "" 
+  const InteractiveButton = ({
+    children,
+    variant = "primary",
+    onClick,
+    className = ""
   }: {
     children: React.ReactNode;
     variant?: "primary" | "secondary";
@@ -166,11 +166,10 @@ const HeroSection = ({ userInteractions, onInteraction }: { userInteractions: nu
     className?: string;
   }) => (
     <button
-      className={`group relative overflow-hidden px-4 sm:px-8 py-3 sm:py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl text-sm sm:text-base ${
-        variant === "primary"
+      className={`group relative overflow-hidden px-4 sm:px-8 py-3 sm:py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl text-sm sm:text-base ${variant === "primary"
           ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
           : "bg-white/10 backdrop-blur-sm text-white border border-white/20 hover:bg-white/20"
-      } ${className}`}
+        } ${className}`}
       onClick={() => {
         onInteraction();
         onClick && onClick();
@@ -186,7 +185,7 @@ const HeroSection = ({ userInteractions, onInteraction }: { userInteractions: nu
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ 
+      element.scrollIntoView({
         behavior: 'smooth',
         block: 'start'
       });
@@ -338,10 +337,9 @@ const ServicesSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
           {services.map((service, index) => (
             <div key={index} className="group">
-              <div className={`glass rounded-2xl hover:border-purple-400/30 transition-all duration-700 hover-lift ${
-                expandedService === index ? 'border-purple-400/50 bg-white/10' : ''
-              }`}>
-                <div 
+              <div className={`glass rounded-2xl hover:border-purple-400/30 transition-all duration-700 hover-lift ${expandedService === index ? 'border-purple-400/50 bg-white/10' : ''
+                }`}>
+                <div
                   className="p-6 sm:p-8 cursor-pointer"
                   onClick={() => toggleService(index)}
                 >
@@ -357,7 +355,7 @@ const ServicesSection = () => {
                       {expandedService === index ? '−' : '+'}
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-3">
                     {service.features.map((feature, i) => (
                       <div key={i} className="flex items-center gap-2">
@@ -514,11 +512,34 @@ const TeamSection = () => {
       specialties: "Enterprise digital transformation, startup scaling, technology strategy, and organizational leadership."
     },
     {
+      name: "Sreek Pulicherla",
+      role: "Co-Founder",
+      specialty: "AI/ML, Cloud & Mobile Technology",
+      avatar: "👨‍🚀",
+      experience: "20 years",
+      bio: "A seasoned Co-Founder with 20 years of expertise in mobile application development, AI/ML, and cloud technologies. Sreek has a proven track record of handling Fortune 500 clientele in the APAC region.",
+      education: "Masters in AI & Machine Learning, Bachelors in Technology",
+      previousProjects: [
+        "Led mobile application strategy for Fortune 500 clients in the APAC region",
+        "Architected scalable, multi-cloud environments for enterprise applications",
+        "Pioneered the integration of AI/ML models into commercial mobile platforms",
+        "Managed relationships and technical delivery for key international accounts"
+      ],
+      skills: ["Mobile Application Development", "AI/ML Strategy", "Cloud Architecture", "APAC Market Expertise", "Enterprise Client Management", "Product Scalability"],
+      achievements: [
+        "Secured multi-year contracts with top-tier APAC companies",
+        "Recognized for innovation in cloud and mobile integration",
+        "Grew regional division's revenue by 200%",
+        "Keynote speaker at major APAC tech conferences"
+      ],
+      specialties: "Mobile application development, AI/ML solutions, cloud technology, and enterprise client management in the APAC region."
+    },
+    {
       name: "Vamsi Priya",
-      role: "Co-Founder & CTO",
+      role: "Robotics Lead",
       specialty: "Robotics & International Technology Solutions",
-      avatar: "👩‍💻",
-      experience: "15+ years",
+      avatar: "👩‍",
+      experience: "8+ years",
       bio: "Robotics expert with extensive experience delivering cutting-edge automation solutions for Japanese enterprise clients.",
       education: "Bachelors in Computer Science, Specialized in Robotics Engineering",
       previousProjects: [
@@ -536,30 +557,7 @@ const TeamSection = () => {
       ],
       specialties: "Robotics automation, international project delivery, Japanese market expertise, and AI-powered manufacturing solutions."
     },
-    {
-      name: "Raj Kumar",
-      role: "Lead Developer",
-      specialty: "Full-Stack Development",
-      avatar: "👨‍💻",
-      experience: "8+ years",
-      bio: "Full-stack architect who has built scalable systems serving millions of users worldwide.",
-      education: "MS Software Engineering, BS Computer Science",
-      previousProjects: [
-        "Built scalable e-commerce platform (10M+ users)",
-        "Developed real-time trading systems",
-        "Created award-winning mobile apps",
-        "Led microservices architecture implementations"
-      ],
-      skills: ["React/Next.js", "Node.js", "Python", "Cloud Architecture", "Microservices", "DevOps"],
-      achievements: [
-        "GitHub top contributor",
-        "Built systems handling 1B+ requests/day",
-        "Open source maintainer",
-        "Technical architecture expert"
-      ],
-      specialties: "Scalable web applications, cloud architecture, and high-performance systems."
-    },
-    {
+        {
       name: "Anita Singh",
       role: "Design Director",
       specialty: "UI/UX Design",
@@ -634,7 +632,7 @@ const TeamSection = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {teamMembers.map((member, index) => (
               <div key={index} className="group">
-                <div 
+                <div
                   className="glass rounded-2xl p-4 sm:p-6 hover:border-purple-400/30 transition-all duration-700 text-center hover-lift h-full cursor-pointer"
                   onClick={() => openMemberModal(member)}
                 >
@@ -645,9 +643,9 @@ const TeamSection = () => {
                   <p className="text-purple-300 font-medium mb-1 sm:mb-2 text-xs sm:text-sm">{member.role}</p>
                   <p className="text-gray-400 text-xs mb-2 sm:mb-3">{member.specialty}</p>
                   <p className="text-indigo-300 text-xs mb-3 sm:mb-4">{member.experience} experience</p>
-                  
+
                   <p className="text-gray-300 text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed line-clamp-3">{member.bio}</p>
-                  
+
                   <div className="space-y-2">
                     <h4 className="text-xs font-semibold text-purple-300">Core Skills</h4>
                     <div className="flex flex-wrap gap-1 justify-center">
@@ -676,20 +674,18 @@ const TeamSection = () => {
 
       {/* Team Member Modal */}
       {isModalOpen && selectedMember && (
-        <div 
-          className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300 ${
-            modalAnimation === 'visible' ? 'opacity-100' : 'opacity-0'
-          }`}
+        <div
+          className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300 ${modalAnimation === 'visible' ? 'opacity-100' : 'opacity-0'
+            }`}
           onClick={closeMemberModal}
         >
-          <div 
-            className={`bg-gradient-to-br from-slate-800 to-purple-900 rounded-2xl p-4 sm:p-6 lg:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-purple-400/30 transition-all duration-500 transform ${
-              modalAnimation === 'visible' 
-                ? 'scale-100 rotate-0 translate-y-0' 
+          <div
+            className={`bg-gradient-to-br from-slate-800 to-purple-900 rounded-2xl p-4 sm:p-6 lg:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-purple-400/30 transition-all duration-500 transform ${modalAnimation === 'visible'
+                ? 'scale-100 rotate-0 translate-y-0'
                 : modalAnimation === 'entering'
-                ? 'scale-75 rotate-12 translate-y-8'
-                : 'scale-75 rotate-12 translate-y-8'
-            }`}
+                  ? 'scale-75 rotate-12 translate-y-8'
+                  : 'scale-75 rotate-12 translate-y-8'
+              }`}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex flex-col sm:flex-row justify-between items-start mb-6">
@@ -767,7 +763,7 @@ const TeamSection = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="text-center pt-6 sm:pt-8 border-t border-white/10 mt-6 sm:mt-8">
               <p className="text-xs text-gray-500 mb-2">Press ESC or click outside to close</p>
               <button
@@ -932,7 +928,7 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
       }, 5000);
     }
   };
-  
+
   // A sub-component for the interactive map visualization
   const InteractiveMap = () => (
     <div className="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 rounded-2xl overflow-hidden border border-purple-400/30 p-8">
@@ -947,30 +943,28 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
         {offices.map((office, index) => {
           const now = new Date();
           const timeOptions: Intl.DateTimeFormatOptions = {
-            timeZone: office.timezone === 'PST' ? 'America/Los_Angeles' : 
-                      office.timezone === 'IST' ? 'Asia/Kolkata' : 'Asia/Singapore',
+            timeZone: office.timezone === 'PST' ? 'America/Los_Angeles' :
+              office.timezone === 'IST' ? 'Asia/Kolkata' : 'Asia/Singapore',
             hour: '2-digit',
             minute: '2-digit',
             hour12: true
           };
           const localTime = now.toLocaleTimeString('en-US', timeOptions);
-          
+
           return (
             <div
               key={index}
-              className={`text-center p-4 rounded-xl transition-all duration-300 cursor-pointer ${
-                selectedOffice === index 
-                  ? `bg-gradient-to-r ${office.gradient} bg-opacity-20 border border-white/30` 
+              className={`text-center p-4 rounded-xl transition-all duration-300 cursor-pointer ${selectedOffice === index
+                  ? `bg-gradient-to-r ${office.gradient} bg-opacity-20 border border-white/30`
                   : 'bg-white/5 border border-white/10 hover:bg-white/10'
-              }`}
+                }`}
               onClick={() => setSelectedOffice(index)}
             >
               <div className="text-2xl mb-2">{office.icon}</div>
               <div className="text-sm font-semibold">{office.city}</div>
               <div className="text-xs text-gray-300">{localTime} {office.timezone}</div>
-              <div className={`w-2 h-2 rounded-full mx-auto mt-2 ${
-                selectedOffice === index ? 'bg-green-400 animate-pulse' : 'bg-gray-500'
-              }`}></div>
+              <div className={`w-2 h-2 rounded-full mx-auto mt-2 ${selectedOffice === index ? 'bg-green-400 animate-pulse' : 'bg-gray-500'
+                }`}></div>
             </div>
           );
         })}
@@ -990,33 +984,33 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
             <linearGradient id="design-gradient"><stop stopColor="#3b82f6" /><stop offset="1" stopColor="#06b6d4" /></linearGradient>
             <linearGradient id="dev-gradient"><stop stopColor="#a855f7" /><stop offset="1" stopColor="#ec4899" /></linearGradient>
             <linearGradient id="apac-gradient"><stop stopColor="#10b981" /><stop offset="1" stopColor="#14b8a6" /></linearGradient>
-            
+
             <filter id="glow">
-              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-              <feMerge> 
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
+              <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
           </defs>
-          
+
           {/* Connection Lines */}
-          <path 
-            d="M 80 60 Q 200 20 320 60" 
-            stroke="url(#networkGradient)" 
-            strokeWidth="2" 
+          <path
+            d="M 80 60 Q 200 20 320 60"
+            stroke="url(#networkGradient)"
+            strokeWidth="2"
             fill="none"
             filter="url(#glow)"
             className="animate-pulse"
           />
-          <path 
-            d="M 80 60 Q 200 100 320 60" 
-            stroke="url(#networkGradient)" 
-            strokeWidth="1" 
+          <path
+            d="M 80 60 Q 200 100 320 60"
+            stroke="url(#networkGradient)"
+            strokeWidth="1"
             fill="none"
             opacity="0.5"
           />
-          
+
           {/* Office Nodes */}
           {offices.map((office, index) => (
             <g key={index} onClick={() => setSelectedOffice(index)} className="cursor-pointer">
@@ -1046,7 +1040,7 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
               </text>
             </g>
           ))}
-          
+
           {/* Data Flow Animation */}
           <circle r="3" fill="#60a5fa" className="opacity-70 pointer-events-none">
             <animateMotion dur="4s" repeatCount="indefinite" path="M 80 60 Q 200 20 320 60" />
@@ -1081,14 +1075,13 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
         {/* Global Offices Overview */}
         <div className="mb-12 sm:mb-16">
           <InteractiveMap />
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
             {offices.map((office, index) => (
               <div
                 key={index}
-                className={`glass rounded-xl p-6 cursor-pointer transition-all duration-500 hover-lift ${
-                  selectedOffice === index ? 'border-purple-400/50 bg-white/10' : ''
-                }`}
+                className={`glass rounded-xl p-6 cursor-pointer transition-all duration-500 hover-lift ${selectedOffice === index ? 'border-purple-400/50 bg-white/10' : ''
+                  }`}
                 onClick={() => setSelectedOffice(index)}
               >
                 <div className="flex items-center gap-3 mb-4">
@@ -1100,12 +1093,12 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
                     <p className="text-purple-300 text-sm">{office.city}, {office.country}</p>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2 text-sm">
                   <p className="text-gray-300">{office.type}</p>
                   <p className="text-gray-400">{office.address}</p>
                   <p className="text-indigo-300">Team: {office.team}</p>
-                  
+
                   <div className="flex flex-wrap gap-1 mt-3">
                     {office.specialties.slice(0, 2).map((specialty, i) => (
                       <span key={i} className="px-2 py-1 bg-purple-600/20 text-purple-200 rounded text-xs border border-purple-400/20">
@@ -1129,7 +1122,7 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
           <div className="order-2 lg:order-1">
             <div className="glass rounded-2xl p-8">
               <h3 className="text-2xl font-bold mb-6 text-gradient">Start Your Project</h3>
-              
+
               <form onSubmit={handleContactFormSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <input
@@ -1200,7 +1193,7 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
                     {validationErrors.map((error, index) => <p key={index}>• {error}</p>)}
                   </div>
                 )}
-                
+
                 {/* Submission Status Messages */}
                 {submitStatus === 'success' && (
                   <div className="p-4 bg-green-600/20 border border-green-400/30 rounded-xl"><p className="text-green-300 flex items-center gap-2"><span className="text-xl">✅</span>Message sent successfully! Our team will reach out within 24 hours.</p></div>
@@ -1212,11 +1205,10 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`w-full group relative overflow-hidden px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
-                    isSubmitting 
-                      ? 'bg-gray-600 cursor-not-allowed' 
+                  className={`w-full group relative overflow-hidden px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${isSubmitting
+                      ? 'bg-gray-600 cursor-not-allowed'
                       : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 hover:shadow-2xl'
-                  }`}
+                    }`}
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
                     {isSubmitting ? (
@@ -1250,7 +1242,7 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
                   <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center text-2xl">💬</div>
                   <div><h4 className="font-semibold text-lg">Live Chat Support</h4><p className="text-gray-300">Available 24/7</p><p className="text-sm text-gray-400">Instant response worldwide</p></div>
                 </div>
-                
+
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-2xl">📅</div>
                   <div><h4 className="font-semibold text-lg">Schedule a Call</h4><p className="text-gray-300">Book a consultation</p><p className="text-sm text-gray-400">Free 30-min strategy session</p></div>
@@ -1287,14 +1279,14 @@ const Footer = () => {
               <p className="text-gray-400 text-xs sm:text-sm">{ENV.COMPANY_TAGLINE}</p>
             </div>
           </div>
-          
+
           <div className="flex space-x-6">
             <a href="#" className="text-gray-400 hover:text-purple-300 transition-colors text-2xl">🐦</a>
             <a href="#" className="text-gray-400 hover:text-purple-300 transition-colors text-2xl">💼</a>
             <a href="#" className="text-gray-400 hover:text-purple-300 transition-colors text-2xl">🐙</a>
           </div>
         </div>
-        
+
         <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-white/10 text-center text-gray-400">
           <p className="text-xs sm:text-sm">&copy; 2025 {ENV.COMPANY_NAME}. All rights reserved. Built with innovation in mind.</p>
         </div>
@@ -1315,7 +1307,7 @@ export default function UltramodernTechWebsite() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-x-hidden">
       <BreathingOrbs />
-      
+
       <Navigation userInteractions={userInteractions} onInteraction={handleInteraction} />
 
       <HeroSection userInteractions={userInteractions} onInteraction={handleInteraction} />
