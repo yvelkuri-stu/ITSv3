@@ -790,17 +790,79 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
   const [contactForm, setContactForm] = useState({
     name: '',
     email: '', 
-    message: ''
+    message: '',
+    company: '',
+    projectType: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [selectedOffice, setSelectedOffice] = useState(0);
+
+  const offices = [
+    {
+      name: "Design Center",
+      city: "Irvine, CA",
+      country: "USA",
+      type: "Design & Strategy",
+      icon: "🎨",
+      gradient: "from-blue-500 to-cyan-500",
+      coordinates: { lat: 33.6846, lng: -117.8265 },
+      address: "2030 Main Street, Suite 1200",
+      timezone: "PST",
+      specialties: ["UI/UX Design", "Product Strategy", "Brand Development"],
+      team: "20+ Designers & Strategists"
+    },
+    {
+      name: "Development Hub",
+      city: "Bangalore",
+      country: "India",
+      type: "Engineering & AI",
+      icon: "⚡",
+      gradient: "from-purple-500 to-pink-500",
+      coordinates: { lat: 12.9716, lng: 77.5946 },
+      address: "Prestige Tech Park, Kadubeesanahalli",
+      timezone: "IST",
+      specialties: ["Full-Stack Development", "AI/ML", "Cloud Architecture"],
+      team: "100+ Engineers & Data Scientists"
+    },
+    {
+      name: "APAC Client Center",
+      city: "Singapore",
+      country: "Singapore",
+      type: "Client Relations & Sales",
+      icon: "🌏",
+      gradient: "from-emerald-500 to-teal-500",
+      coordinates: { lat: 1.3521, lng: 103.8198 },
+      address: "Marina Bay Financial Centre, Tower 1",
+      timezone: "SGT",
+      specialties: ["Client Relations", "Regional Sales", "Support"],
+      team: "15+ Client Success Managers"
+    }
+  ];
 
   const handleContactFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     onInteraction();
     
-    if (!contactForm.name.trim() || !contactForm.email.trim() || !contactForm.message.trim()) {
-      alert('Please fill in all fields.');
+    // Enhanced validation
+    const errors = [];
+    if (!contactForm.name.trim()) errors.push('Name is required');
+    if (!contactForm.email.trim()) errors.push('Email is required');
+    if (!contactForm.message.trim()) errors.push('Message is required');
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (contactForm.email.trim() && !emailRegex.test(contactForm.email.trim())) {
+      errors.push('Please enter a valid email address');
+    }
+    
+    // Message length validation
+    if (contactForm.message.trim() && contactForm.message.trim().length < 10) {
+      errors.push('Message must be at least 10 characters long');
+    }
+    
+    if (errors.length > 0) {
+      alert(`Please fix the following issues:\n• ${errors.join('\n• ')}`);
       return;
     }
 
@@ -808,178 +870,464 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
     setSubmitStatus('idle');
 
     try {
-      // Switch back to Vercel API route once path is fixed
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: contactForm.name,
-          email: contactForm.email,
-          message: contactForm.message
+          name: contactForm.name.trim(),
+          email: contactForm.email.trim(),
+          message: contactForm.message.trim(),
+          company: contactForm.company.trim() || undefined,
+          projectType: contactForm.projectType || undefined,
+          timestamp: new Date().toISOString(),
+          source: 'website-contact-form'
         })
       });
 
-      const result = await response.json();
-
+      // Handle response
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to send message');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server error: ${response.status} ${response.statusText}`);
       }
 
+      const result = await response.json();
       setSubmitStatus('success');
-      setContactForm({ name: '', email: '', message: '' });
+      setContactForm({ name: '', email: '', message: '', company: '', projectType: '' });
       
-      alert(`Thank you ${contactForm.name}! Your message has been sent successfully. We'll get back to you at ${contactForm.email} soon.`);
+      console.log('Form submitted successfully:', result);
       
     } catch (error) {
-      console.error('Contact form error:', error);
+      console.error('Contact form submission error:', error);
       setSubmitStatus('error');
-      alert('Sorry, there was an error sending your message. Please try again or contact us directly at hello@idealtechnosoft.com');
+      
+      // Enhanced error logging
+      console.error('Detailed error info:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        formData: {
+          name: contactForm.name,
+          email: contactForm.email,
+          messageLength: contactForm.message.length,
+          company: contactForm.company,
+          projectType: contactForm.projectType
+        },
+        timestamp: new Date().toISOString()
+      });
     } finally {
       setIsSubmitting(false);
+      
+      // Auto-clear status messages after 5 seconds
+      setTimeout(() => {
+        setSubmitStatus('idle');
+      }, 5000);
     }
   };
 
+  const InteractiveMap = () => (
+    <div className="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 rounded-2xl overflow-hidden border border-purple-400/30 p-8">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <h3 className="text-2xl font-bold text-gradient mb-2">Global Operations Network</h3>
+        <p className="text-gray-300 text-sm">24/7 coverage across three continents</p>
+      </div>
+
+      {/* Time Zone Display */}
+      <div className="grid grid-cols-3 gap-4 mb-8">
+        {offices.map((office, index) => {
+          const now = new Date();
+          const timeOptions: Intl.DateTimeFormatOptions = {
+            timeZone: office.timezone === 'PST' ? 'America/Los_Angeles' : 
+                     office.timezone === 'IST' ? 'Asia/Kolkata' : 'Asia/Singapore',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+          };
+          const localTime = now.toLocaleTimeString('en-US', timeOptions);
+          
+          return (
+            <div
+              key={index}
+              className={`text-center p-4 rounded-xl transition-all duration-300 cursor-pointer ${
+                selectedOffice === index 
+                  ? `bg-gradient-to-r ${office.gradient} bg-opacity-20 border border-white/30` 
+                  : 'bg-white/5 border border-white/10 hover:bg-white/10'
+              }`}
+              onClick={() => setSelectedOffice(index)}
+            >
+              <div className="text-2xl mb-2">{office.icon}</div>
+              <div className="text-sm font-semibold">{office.city}</div>
+              <div className="text-xs text-gray-300">{localTime} {office.timezone}</div>
+              <div className={`w-2 h-2 rounded-full mx-auto mt-2 ${
+                selectedOffice === index ? 'bg-green-400 animate-pulse' : 'bg-gray-500'
+              }`}></div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Network Visualization */}
+      <div className="relative h-32 mb-6">
+        <svg viewBox="0 0 400 120" className="w-full h-full">
+          <defs>
+            <linearGradient id="networkGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#6366f1" />
+              <stop offset="50%" stopColor="#a855f7" />
+              <stop offset="100%" stopColor="#06b6d4" />
+            </linearGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge> 
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          
+          {/* Connection Lines */}
+          <path 
+            d="M 80 60 Q 200 20 320 60" 
+            stroke="url(#networkGradient)" 
+            strokeWidth="2" 
+            fill="none"
+            filter="url(#glow)"
+            className="animate-pulse"
+          />
+          <path 
+            d="M 80 60 Q 200 100 320 60" 
+            stroke="url(#networkGradient)" 
+            strokeWidth="1" 
+            fill="none"
+            opacity="0.5"
+          />
+          
+          {/* Office Nodes */}
+          {offices.map((office, index) => (
+            <g key={index}>
+              <circle
+                cx={80 + index * 120}
+                cy={60}
+                r={selectedOffice === index ? 12 : 8}
+                className={`transition-all duration-300 cursor-pointer`}
+                fill={`url(#${office.gradient.replace('from-', '').replace(' to-', '-')}-gradient)`}
+                onClick={() => setSelectedOffice(index)}
+              />
+              <circle
+                cx={80 + index * 120}
+                cy={60}
+                r={selectedOffice === index ? 20 : 15}
+                fill="none"
+                stroke="rgba(255,255,255,0.3)"
+                strokeWidth="1"
+                className={selectedOffice === index ? 'animate-ping' : ''}
+              />
+              <text
+                x={80 + index * 120}
+                y={85}
+                textAnchor="middle"
+                className="fill-white text-xs font-medium"
+              >
+                {office.city.split(',')[0]}
+              </text>
+            </g>
+          ))}
+          
+          {/* Data Flow Animation */}
+          <circle r="3" fill="#60a5fa" className="opacity-70">
+            <animateMotion dur="4s" repeatCount="indefinite">
+              <path d="M 80 60 Q 200 20 320 60" />
+            </animateMotion>
+          </circle>
+          <circle r="2" fill="#34d399" className="opacity-70">
+            <animateMotion dur="3s" repeatCount="indefinite" begin="1s">
+              <path d="M 320 60 Q 200 100 80 60" />
+            </animateMotion>
+          </circle>
+        </svg>
+      </div>
+
+      {/* Network Stats */}
+      <div className="grid grid-cols-3 gap-4 text-center text-sm">
+        <div className="bg-white/5 rounded-lg p-3">
+          <div className="text-lg font-bold text-green-400">99.9%</div>
+          <div className="text-gray-400">Uptime</div>
+        </div>
+        <div className="bg-white/5 rounded-lg p-3">
+          <div className="text-lg font-bold text-blue-400">24/7</div>
+          <div className="text-gray-400">Support</div>
+        </div>
+        <div className="bg-white/5 rounded-lg p-3">
+          <div className="text-lg font-bold text-purple-400">150+</div>
+          <div className="text-gray-400">Projects</div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <section id="contact" className="py-12 sm:py-24 px-4 sm:px-6 bg-black/20 relative z-10">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12 sm:mb-16">
           <h2 className="text-3xl sm:text-5xl font-bold mb-4 sm:mb-6 text-gradient">
-            Let's Work Together
+            Connect With Our Global Team
           </h2>
-          <p className="text-lg sm:text-xl text-gray-300 px-4">
-            Ready to transform your business with innovative technology? Get in touch with us today.
+          <p className="text-lg sm:text-xl text-gray-300 px-4 max-w-3xl mx-auto">
+            From design to deployment, our world-class teams across three continents are ready to bring your vision to life.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 sm:gap-12">
-          <div className="lg:col-span-2">
-            <div className="space-y-6 sm:space-y-8">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0 text-xl sm:text-2xl">
-                  📧
+        {/* Global Offices Overview */}
+        <div className="mb-12 sm:mb-16">
+          <InteractiveMap />
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+            {offices.map((office, index) => (
+              <div
+                key={index}
+                className={`glass rounded-xl p-6 cursor-pointer transition-all duration-500 hover-lift ${
+                  selectedOffice === index ? 'border-purple-400/50 bg-white/10' : ''
+                }`}
+                onClick={() => setSelectedOffice(index)}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${office.gradient} flex items-center justify-center text-2xl`}>
+                    {office.icon}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg">{office.name}</h3>
+                    <p className="text-purple-300 text-sm">{office.city}, {office.country}</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-semibold text-lg">Email</h4>
-                  <p className="text-gray-300 text-sm sm:text-base break-all">{ENV.COMPANY_EMAIL}</p>
+                
+                <div className="space-y-2 text-sm">
+                  <p className="text-gray-300">{office.type}</p>
+                  <p className="text-gray-400">{office.address}</p>
+                  <p className="text-indigo-300">Team: {office.team}</p>
+                  
+                  <div className="flex flex-wrap gap-1 mt-3">
+                    {office.specialties.slice(0, 2).map((specialty, i) => (
+                      <span key={i} className="px-2 py-1 bg-purple-600/20 text-purple-200 rounded text-xs border border-purple-400/20">
+                        {specialty}
+                      </span>
+                    ))}
+                    {office.specialties.length > 2 && (
+                      <span className="px-2 py-1 bg-indigo-600/20 text-indigo-200 rounded text-xs border border-indigo-400/20">
+                        +{office.specialties.length - 2}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0 text-xl sm:text-2xl">
-                  📞
-                </div>
-                <div>
-                  <h4 className="font-semibold text-lg">Phone</h4>
-                  <p className="text-gray-300 text-sm sm:text-base">{ENV.COMPANY_PHONE}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0 text-xl sm:text-2xl">
-                  📍
-                </div>
-                <div>
-                  <h4 className="font-semibold text-lg">Location</h4>
-                  <p className="text-gray-300 text-sm sm:text-base">{ENV.COMPANY_ADDRESS}</p>
-                </div>
-              </div>
+              );
+            })}
+          </div>
+        </div>
 
-              <div className="mt-8 p-4 bg-green-600/20 rounded-lg border border-green-400/30">
-                <h4 className="font-semibold text-green-300 mb-2">🚀 Powered by Vercel + Resend</h4>
-                <ul className="text-xs text-gray-300 space-y-1">
-                  <li>• Serverless API routes</li>
-                  <li>• Professional email delivery</li>
-                  <li>• Secure & scalable infrastructure</li>
-                  <li>• Real-time form processing</li>
-                </ul>
-              </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Enhanced Contact Form */}
+          <div className="order-2 lg:order-1">
+            <div className="glass rounded-2xl p-8">
+              <h3 className="text-2xl font-bold mb-6 text-gradient">Start Your Project</h3>
+              
+              <form onSubmit={handleContactFormSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Full Name <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="John Doe"
+                      value={contactForm.name}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-purple-400 focus:outline-none text-white placeholder-gray-400 transition-all duration-300"
+                      onChange={(e) => setContactForm(prev => ({ ...prev, name: e.target.value }))}
+                      disabled={isSubmitting}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Company
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Your Company"
+                      value={contactForm.company}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-purple-400 focus:outline-none text-white placeholder-gray-400 transition-all duration-300"
+                      onChange={(e) => setContactForm(prev => ({ ...prev, company: e.target.value }))}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Email Address <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="john@company.com"
+                      value={contactForm.email}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-purple-400 focus:outline-none text-white placeholder-gray-400 transition-all duration-300"
+                      onChange={(e) => setContactForm(prev => ({ ...prev, email: e.target.value }))}
+                      disabled={isSubmitting}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Project Type
+                    </label>
+                    <select
+                      value={contactForm.projectType}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-purple-400 focus:outline-none text-white transition-all duration-300"
+                      onChange={(e) => setContactForm(prev => ({ ...prev, projectType: e.target.value }))}
+                      disabled={isSubmitting}
+                    >
+                      <option value="">Select Type</option>
+                      <option value="web-development">Web Development</option>
+                      <option value="mobile-app">Mobile App</option>
+                      <option value="ai-ml">AI/ML Solution</option>
+                      <option value="ui-ux">UI/UX Design</option>
+                      <option value="consulting">Consulting</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Project Details <span className="text-red-400">*</span>
+                  </label>
+                  <textarea
+                    placeholder="Tell us about your project vision, goals, timeline, and any specific requirements..."
+                    value={contactForm.message}
+                    rows={5}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-purple-400 focus:outline-none text-white placeholder-gray-400 resize-none transition-all duration-300"
+                    onChange={(e) => setContactForm(prev => ({ ...prev, message: e.target.value }))}
+                    disabled={isSubmitting}
+                    required
+                  />
+                </div>
+
+                {submitStatus === 'success' && (
+                  <div className="p-4 bg-green-600/20 border border-green-400/30 rounded-xl">
+                    <p className="text-green-300 flex items-center gap-2">
+                      <span className="text-xl">✅</span>
+                      Message sent successfully! Our team will reach out within 24 hours.
+                    </p>
+                  </div>
+                )}
+
+                {submitStatus === 'error' && (
+                  <div className="p-4 bg-red-600/20 border border-red-400/30 rounded-xl">
+                    <p className="text-red-300 flex items-center gap-2">
+                      <span className="text-xl">❌</span>
+                      Failed to send message. Please try again or email us directly.
+                    </p>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className={`w-full group relative overflow-hidden px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
+                    isSubmitting 
+                      ? 'bg-gray-600 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 hover:shadow-2xl'
+                  }`}
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    {isSubmitting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        🚀 Launch Project Discussion
+                      </>
+                    )}
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                </button>
+              </form>
             </div>
           </div>
 
-          <div className="lg:col-span-3">
-            <form onSubmit={handleContactFormSubmit} className="space-y-4 sm:space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Your Name</label>
-                  <input
-                    type="text"
-                    placeholder="Enter your full name"
-                    value={contactForm.name}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:border-purple-400 focus:outline-none text-white placeholder-gray-400 text-sm sm:text-base transition-colors duration-300"
-                    onChange={(e) => setContactForm(prev => ({ ...prev, name: e.target.value }))}
-                    disabled={isSubmitting}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
-                  <input
-                    type="email"
-                    placeholder="your.email@example.com"
-                    value={contactForm.email}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:border-purple-400 focus:outline-none text-white placeholder-gray-400 text-sm sm:text-base transition-colors duration-300"
-                    onChange={(e) => setContactForm(prev => ({ ...prev, email: e.target.value }))}
-                    disabled={isSubmitting}
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Project Details</label>
-                <textarea
-                  placeholder="Tell us about your project, timeline, budget, and how we can help you achieve your goals..."
-                  value={contactForm.message}
-                  rows={6}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:border-purple-400 focus:outline-none text-white placeholder-gray-400 resize-none text-sm sm:text-base transition-colors duration-300"
-                  onChange={(e) => setContactForm(prev => ({ ...prev, message: e.target.value }))}
-                  disabled={isSubmitting}
-                  required
-                />
-              </div>
+          {/* Enhanced Contact Info */}
+          <div className="order-1 lg:order-2 space-y-6">
+            <div className="glass rounded-2xl p-8">
+              <h3 className="text-2xl font-bold mb-6 text-gradient">Quick Connect</h3>
               
-              {submitStatus === 'success' && (
-                <div className="p-4 bg-green-600/20 border border-green-400/30 rounded-lg">
-                  <p className="text-green-300 text-sm">✅ Message sent successfully! We'll get back to you soon.</p>
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-2xl">
+                    📧
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-lg">General Inquiries</h4>
+                    <p className="text-gray-300">{ENV.COMPANY_EMAIL}</p>
+                    <p className="text-sm text-gray-400">Response within 4 hours</p>
+                  </div>
                 </div>
-              )}
-              
-              {submitStatus === 'error' && (
-                <div className="p-4 bg-red-600/20 border border-red-400/30 rounded-lg">
-                  <p className="text-red-300 text-sm">❌ Failed to send message. Please try again or email us directly.</p>
-                </div>
-              )}
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className={`w-full group relative overflow-hidden px-8 py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl ${
-                  isSubmitting 
-                    ? 'bg-gray-600 cursor-not-allowed' 
-                    : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700'
-                }`}
-              >
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Sending Message...
-                    </>
-                  ) : (
-                    <>
-                      🚀 Send Message
-                    </>
-                  )}
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-              </button>
-            </form>
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center text-2xl">
+                    💬
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-lg">Live Chat Support</h4>
+                    <p className="text-gray-300">Available 24/7</p>
+                    <p className="text-sm text-gray-400">Instant response worldwide</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-2xl">
+                    📅
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-lg">Schedule a Call</h4>
+                    <p className="text-gray-300">Book a consultation</p>
+                    <p className="text-sm text-gray-400">Free 30-min strategy session</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="glass rounded-2xl p-8">
+              <h3 className="text-xl font-bold mb-4 text-gradient">Why Choose Us?</h3>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-green-400 text-lg mt-0.5">⚡</span>
+                  <div>
+                    <h4 className="font-semibold text-sm">Rapid Development</h4>
+                    <p className="text-xs text-gray-400">MVP in 4-6 weeks</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-blue-400 text-lg mt-0.5">🌍</span>
+                  <div>
+                    <h4 className="font-semibold text-sm">Global Expertise</h4>
+                    <p className="text-xs text-gray-400">150+ successful projects</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-purple-400 text-lg mt-0.5">🔒</span>
+                  <div>
+                    <h4 className="font-semibold text-sm">Enterprise Security</h4>
+                    <p className="text-xs text-gray-400">SOC 2 Type II compliant</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
   );
 };
-
 // =================== FOOTER ===================
 
 const Footer = () => {
