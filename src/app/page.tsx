@@ -783,21 +783,25 @@ const TeamSection = () => {
     </>
   );
 };
-
 // =================== CONTACT SECTION ===================
 
 const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
+  // State for the form fields
   const [contactForm, setContactForm] = useState({
     name: '',
-    email: '', 
+    email: '',
     message: '',
     company: '',
     projectType: ''
   });
+
+  // State for submission status and validation errors
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [selectedOffice, setSelectedOffice] = useState(0);
 
+  // Data for the global offices
   const offices = [
     {
       name: "Design Center",
@@ -806,6 +810,7 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
       type: "Design & Strategy",
       icon: "🎨",
       gradient: "from-blue-500 to-cyan-500",
+      gradientId: "design-gradient",
       coordinates: { lat: 33.6846, lng: -117.8265 },
       address: "2030 Main Street, Suite 1200",
       timezone: "PST",
@@ -819,6 +824,7 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
       type: "Engineering & AI",
       icon: "⚡",
       gradient: "from-purple-500 to-pink-500",
+      gradientId: "dev-gradient",
       coordinates: { lat: 12.9716, lng: 77.5946 },
       address: "Prestige Tech Park, Kadubeesanahalli",
       timezone: "IST",
@@ -832,6 +838,7 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
       type: "Client Relations & Sales",
       icon: "🌏",
       gradient: "from-emerald-500 to-teal-500",
+      gradientId: "apac-gradient",
       coordinates: { lat: 1.3521, lng: 103.8198 },
       address: "Marina Bay Financial Centre, Tower 1",
       timezone: "SGT",
@@ -840,29 +847,32 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
     }
   ];
 
+  // Handles form submission
   const handleContactFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     onInteraction();
-    
+    setValidationErrors([]); // Clear previous errors
+
     // Enhanced validation
     const errors = [];
     if (!contactForm.name.trim()) errors.push('Name is required');
     if (!contactForm.email.trim()) errors.push('Email is required');
     if (!contactForm.message.trim()) errors.push('Message is required');
-    
-    // Email validation
+
+    // Email validation regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (contactForm.email.trim() && !emailRegex.test(contactForm.email.trim())) {
       errors.push('Please enter a valid email address');
     }
-    
+
     // Message length validation
     if (contactForm.message.trim() && contactForm.message.trim().length < 10) {
       errors.push('Message must be at least 10 characters long');
     }
-    
+
+    // If there are errors, update state and stop submission
     if (errors.length > 0) {
-      alert(`Please fix the following issues:\n• ${errors.join('\n• ')}`);
+      setValidationErrors(errors);
       return;
     }
 
@@ -870,6 +880,18 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
     setSubmitStatus('idle');
 
     try {
+      // Simulate API call
+      console.log('Submitting form data:', {
+        name: contactForm.name.trim(),
+        email: contactForm.email.trim(),
+        message: contactForm.message.trim(),
+        company: contactForm.company.trim() || undefined,
+        projectType: contactForm.projectType || undefined,
+        timestamp: new Date().toISOString(),
+        source: 'website-contact-form'
+      });
+
+      // NOTE: Replace this with your actual API endpoint
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
@@ -886,7 +908,7 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
         })
       });
 
-      // Handle response
+      // Handle non-successful responses
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `Server error: ${response.status} ${response.statusText}`);
@@ -894,36 +916,24 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
 
       const result = await response.json();
       setSubmitStatus('success');
+      // Reset form fields
       setContactForm({ name: '', email: '', message: '', company: '', projectType: '' });
-      
       console.log('Form submitted successfully:', result);
-      
+
     } catch (error) {
       console.error('Contact form submission error:', error);
       setSubmitStatus('error');
-      
-      // Enhanced error logging
-      console.error('Detailed error info:', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        formData: {
-          name: contactForm.name,
-          email: contactForm.email,
-          messageLength: contactForm.message.length,
-          company: contactForm.company,
-          projectType: contactForm.projectType
-        },
-        timestamp: new Date().toISOString()
-      });
     } finally {
       setIsSubmitting(false);
-      
+
       // Auto-clear status messages after 5 seconds
       setTimeout(() => {
         setSubmitStatus('idle');
       }, 5000);
     }
   };
-
+  
+  // A sub-component for the interactive map visualization
   const InteractiveMap = () => (
     <div className="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 rounded-2xl overflow-hidden border border-purple-400/30 p-8">
       {/* Header */}
@@ -938,7 +948,7 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
           const now = new Date();
           const timeOptions: Intl.DateTimeFormatOptions = {
             timeZone: office.timezone === 'PST' ? 'America/Los_Angeles' : 
-                     office.timezone === 'IST' ? 'Asia/Kolkata' : 'Asia/Singapore',
+                      office.timezone === 'IST' ? 'Asia/Kolkata' : 'Asia/Singapore',
             hour: '2-digit',
             minute: '2-digit',
             hour12: true
@@ -970,11 +980,17 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
       <div className="relative h-32 mb-6">
         <svg viewBox="0 0 400 120" className="w-full h-full">
           <defs>
+            {/* Main network gradient */}
             <linearGradient id="networkGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#6366f1" />
               <stop offset="50%" stopColor="#a855f7" />
               <stop offset="100%" stopColor="#06b6d4" />
             </linearGradient>
+            {/* Individual office gradients for the nodes */}
+            <linearGradient id="design-gradient"><stop stopColor="#3b82f6" /><stop offset="1" stopColor="#06b6d4" /></linearGradient>
+            <linearGradient id="dev-gradient"><stop stopColor="#a855f7" /><stop offset="1" stopColor="#ec4899" /></linearGradient>
+            <linearGradient id="apac-gradient"><stop stopColor="#10b981" /><stop offset="1" stopColor="#14b8a6" /></linearGradient>
+            
             <filter id="glow">
               <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
               <feMerge> 
@@ -1003,14 +1019,13 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
           
           {/* Office Nodes */}
           {offices.map((office, index) => (
-            <g key={index}>
+            <g key={index} onClick={() => setSelectedOffice(index)} className="cursor-pointer">
               <circle
                 cx={80 + index * 120}
                 cy={60}
                 r={selectedOffice === index ? 12 : 8}
-                className={`transition-all duration-300 cursor-pointer`}
-                fill={`url(#${office.gradient.replace('from-', '').replace(' to-', '-')}-gradient)`}
-                onClick={() => setSelectedOffice(index)}
+                className={`transition-all duration-300`}
+                fill={`url(#${office.gradientId})`}
               />
               <circle
                 cx={80 + index * 120}
@@ -1025,7 +1040,7 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
                 x={80 + index * 120}
                 y={85}
                 textAnchor="middle"
-                className="fill-white text-xs font-medium"
+                className="fill-white text-xs font-medium pointer-events-none"
               >
                 {office.city.split(',')[0]}
               </text>
@@ -1033,33 +1048,20 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
           ))}
           
           {/* Data Flow Animation */}
-          <circle r="3" fill="#60a5fa" className="opacity-70">
-            <animateMotion dur="4s" repeatCount="indefinite">
-              <path d="M 80 60 Q 200 20 320 60" />
-            </animateMotion>
+          <circle r="3" fill="#60a5fa" className="opacity-70 pointer-events-none">
+            <animateMotion dur="4s" repeatCount="indefinite" path="M 80 60 Q 200 20 320 60" />
           </circle>
-          <circle r="2" fill="#34d399" className="opacity-70">
-            <animateMotion dur="3s" repeatCount="indefinite" begin="1s">
-              <path d="M 320 60 Q 200 100 80 60" />
-            </animateMotion>
+          <circle r="2" fill="#34d399" className="opacity-70 pointer-events-none">
+            <animateMotion dur="3s" repeatCount="indefinite" begin="1s" path="M 320 60 Q 200 100 80 60" />
           </circle>
         </svg>
       </div>
 
       {/* Network Stats */}
       <div className="grid grid-cols-3 gap-4 text-center text-sm">
-        <div className="bg-white/5 rounded-lg p-3">
-          <div className="text-lg font-bold text-green-400">99.9%</div>
-          <div className="text-gray-400">Uptime</div>
-        </div>
-        <div className="bg-white/5 rounded-lg p-3">
-          <div className="text-lg font-bold text-blue-400">24/7</div>
-          <div className="text-gray-400">Support</div>
-        </div>
-        <div className="bg-white/5 rounded-lg p-3">
-          <div className="text-lg font-bold text-purple-400">150+</div>
-          <div className="text-gray-400">Projects</div>
-        </div>
+        <div className="bg-white/5 rounded-lg p-3"><div className="text-lg font-bold text-green-400">99.9%</div><div className="text-gray-400">Uptime</div></div>
+        <div className="bg-white/5 rounded-lg p-3"><div className="text-lg font-bold text-blue-400">24/7</div><div className="text-gray-400">Support</div></div>
+        <div className="bg-white/5 rounded-lg p-3"><div className="text-lg font-bold text-purple-400">150+</div><div className="text-gray-400">Projects</div></div>
       </div>
     </div>
   );
@@ -1117,8 +1119,8 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
                     )}
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
 
@@ -1130,77 +1132,59 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
               
               <form onSubmit={handleContactFormSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Full Name <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="John Doe"
-                      value={contactForm.name}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-purple-400 focus:outline-none text-white placeholder-gray-400 transition-all duration-300"
-                      onChange={(e) => setContactForm(prev => ({ ...prev, name: e.target.value }))}
-                      disabled={isSubmitting}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Company
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Your Company"
-                      value={contactForm.company}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-purple-400 focus:outline-none text-white placeholder-gray-400 transition-all duration-300"
-                      onChange={(e) => setContactForm(prev => ({ ...prev, company: e.target.value }))}
-                      disabled={isSubmitting}
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Full Name *"
+                    value={contactForm.name}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-purple-400 focus:outline-none text-white placeholder-gray-400 transition-all duration-300"
+                    onChange={(e) => setContactForm(prev => ({ ...prev, name: e.target.value }))}
+                    disabled={isSubmitting}
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="company"
+                    placeholder="Company"
+                    value={contactForm.company}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-purple-400 focus:outline-none text-white placeholder-gray-400 transition-all duration-300"
+                    onChange={(e) => setContactForm(prev => ({ ...prev, company: e.target.value }))}
+                    disabled={isSubmitting}
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Email Address <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      placeholder="john@company.com"
-                      value={contactForm.email}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-purple-400 focus:outline-none text-white placeholder-gray-400 transition-all duration-300"
-                      onChange={(e) => setContactForm(prev => ({ ...prev, email: e.target.value }))}
-                      disabled={isSubmitting}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Project Type
-                    </label>
-                    <select
-                      value={contactForm.projectType}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-purple-400 focus:outline-none text-white transition-all duration-300"
-                      onChange={(e) => setContactForm(prev => ({ ...prev, projectType: e.target.value }))}
-                      disabled={isSubmitting}
-                    >
-                      <option value="">Select Type</option>
-                      <option value="web-development">Web Development</option>
-                      <option value="mobile-app">Mobile App</option>
-                      <option value="ai-ml">AI/ML Solution</option>
-                      <option value="ui-ux">UI/UX Design</option>
-                      <option value="consulting">Consulting</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Email Address *"
+                    value={contactForm.email}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-purple-400 focus:outline-none text-white placeholder-gray-400 transition-all duration-300"
+                    onChange={(e) => setContactForm(prev => ({ ...prev, email: e.target.value }))}
+                    disabled={isSubmitting}
+                    required
+                  />
+                  <select
+                    name="projectType"
+                    value={contactForm.projectType}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-purple-400 focus:outline-none text-white transition-all duration-300"
+                    onChange={(e) => setContactForm(prev => ({ ...prev, projectType: e.target.value }))}
+                    disabled={isSubmitting}
+                  >
+                    <option value="">Select Project Type</option>
+                    <option value="web-development">Web Development</option>
+                    <option value="mobile-app">Mobile App</option>
+                    <option value="ai-ml">AI/ML Solution</option>
+                    <option value="ui-ux">UI/UX Design</option>
+                    <option value="consulting">Consulting</option>
+                    <option value="other">Other</option>
+                  </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Project Details <span className="text-red-400">*</span>
-                  </label>
                   <textarea
-                    placeholder="Tell us about your project vision, goals, timeline, and any specific requirements..."
+                    name="message"
+                    placeholder="Tell us about your project vision, goals, and timeline... *"
                     value={contactForm.message}
                     rows={5}
                     className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-purple-400 focus:outline-none text-white placeholder-gray-400 resize-none transition-all duration-300"
@@ -1210,22 +1194,19 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
                   />
                 </div>
 
-                {submitStatus === 'success' && (
-                  <div className="p-4 bg-green-600/20 border border-green-400/30 rounded-xl">
-                    <p className="text-green-300 flex items-center gap-2">
-                      <span className="text-xl">✅</span>
-                      Message sent successfully! Our team will reach out within 24 hours.
-                    </p>
+                {/* Validation Errors Display */}
+                {validationErrors.length > 0 && (
+                  <div className="p-4 bg-red-600/20 border border-red-400/30 rounded-xl text-red-300 text-sm space-y-1">
+                    {validationErrors.map((error, index) => <p key={index}>• {error}</p>)}
                   </div>
                 )}
-
+                
+                {/* Submission Status Messages */}
+                {submitStatus === 'success' && (
+                  <div className="p-4 bg-green-600/20 border border-green-400/30 rounded-xl"><p className="text-green-300 flex items-center gap-2"><span className="text-xl">✅</span>Message sent successfully! Our team will reach out within 24 hours.</p></div>
+                )}
                 {submitStatus === 'error' && (
-                  <div className="p-4 bg-red-600/20 border border-red-400/30 rounded-xl">
-                    <p className="text-red-300 flex items-center gap-2">
-                      <span className="text-xl">❌</span>
-                      Failed to send message. Please try again or email us directly.
-                    </p>
-                  </div>
+                  <div className="p-4 bg-red-600/20 border border-red-400/30 rounded-xl"><p className="text-red-300 flex items-center gap-2"><span className="text-xl">❌</span>Failed to send message. Please try again or email us directly.</p></div>
                 )}
 
                 <button
@@ -1239,14 +1220,9 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
                     {isSubmitting ? (
-                      <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                        Processing...
-                      </>
+                      <><div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> Processing...</>
                     ) : (
-                      <>
-                        🚀 Launch Project Discussion
-                      </>
+                      <>🚀 Launch Project Discussion</>
                     )}
                   </span>
                   <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
@@ -1259,39 +1235,25 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
           <div className="order-1 lg:order-2 space-y-6">
             <div className="glass rounded-2xl p-8">
               <h3 className="text-2xl font-bold mb-6 text-gradient">Quick Connect</h3>
-              
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-2xl">
-                    📧
-                  </div>
+                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-2xl">📧</div>
                   <div>
                     <h4 className="font-semibold text-lg">General Inquiries</h4>
-                    <p className="text-gray-300">{ENV.COMPANY_EMAIL}</p>
+                    {/* NOTE: Replace this with your actual environment variable */}
+                    <p className="text-gray-300">contact@yourcompany.com</p>
                     <p className="text-sm text-gray-400">Response within 4 hours</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center text-2xl">
-                    💬
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-lg">Live Chat Support</h4>
-                    <p className="text-gray-300">Available 24/7</p>
-                    <p className="text-sm text-gray-400">Instant response worldwide</p>
-                  </div>
+                  <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center text-2xl">💬</div>
+                  <div><h4 className="font-semibold text-lg">Live Chat Support</h4><p className="text-gray-300">Available 24/7</p><p className="text-sm text-gray-400">Instant response worldwide</p></div>
                 </div>
-
+                
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-2xl">
-                    📅
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-lg">Schedule a Call</h4>
-                    <p className="text-gray-300">Book a consultation</p>
-                    <p className="text-sm text-gray-400">Free 30-min strategy session</p>
-                  </div>
+                  <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-2xl">📅</div>
+                  <div><h4 className="font-semibold text-lg">Schedule a Call</h4><p className="text-gray-300">Book a consultation</p><p className="text-sm text-gray-400">Free 30-min strategy session</p></div>
                 </div>
               </div>
             </div>
@@ -1299,27 +1261,9 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
             <div className="glass rounded-2xl p-8">
               <h3 className="text-xl font-bold mb-4 text-gradient">Why Choose Us?</h3>
               <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <span className="text-green-400 text-lg mt-0.5">⚡</span>
-                  <div>
-                    <h4 className="font-semibold text-sm">Rapid Development</h4>
-                    <p className="text-xs text-gray-400">MVP in 4-6 weeks</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <span className="text-blue-400 text-lg mt-0.5">🌍</span>
-                  <div>
-                    <h4 className="font-semibold text-sm">Global Expertise</h4>
-                    <p className="text-xs text-gray-400">150+ successful projects</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <span className="text-purple-400 text-lg mt-0.5">🔒</span>
-                  <div>
-                    <h4 className="font-semibold text-sm">Enterprise Security</h4>
-                    <p className="text-xs text-gray-400">SOC 2 Type II compliant</p>
-                  </div>
-                </div>
+                <div className="flex items-start gap-3"><span className="text-green-400 text-lg mt-0.5">⚡</span><div><h4 className="font-semibold text-sm">Rapid Development</h4><p className="text-xs text-gray-400">MVP in 4-6 weeks</p></div></div>
+                <div className="flex items-start gap-3"><span className="text-blue-400 text-lg mt-0.5">🌍</span><div><h4 className="font-semibold text-sm">Global Expertise</h4><p className="text-xs text-gray-400">150+ successful projects</p></div></div>
+                <div className="flex items-start gap-3"><span className="text-purple-400 text-lg mt-0.5">🔒</span><div><h4 className="font-semibold text-sm">Enterprise Security</h4><p className="text-xs text-gray-400">SOC 2 Type II compliant</p></div></div>
               </div>
             </div>
           </div>
@@ -1328,6 +1272,7 @@ const ContactSection = ({ onInteraction }: { onInteraction: () => void }) => {
     </section>
   );
 };
+
 // =================== FOOTER ===================
 
 const Footer = () => {
